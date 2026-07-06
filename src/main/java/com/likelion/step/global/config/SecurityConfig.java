@@ -21,7 +21,7 @@ public class SecurityConfig {
                 "/v3/api-docs/**",
                 "/v3/api-docs.yaml"
             ).permitAll()
-            .anyRequest().authenticated()
+            .anyRequest().permitAll()
         )
         .httpBasic(Customizer.withDefaults());
 
