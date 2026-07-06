@@ -35,16 +35,22 @@ jobs:
           strip_components: 2
 
       - name: EC2에서 서버 재시작
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            pkill -f 'java -jar' || true
-            sleep 2
-            nohup java -jar /home/ubuntu/step-0.0.1-SNAPSHOT.jar \
-              --spring.datasource.url=${{ secrets.DB_URL }} \
-              --spring.datasource.username=${{ secrets.DB_USERNAME }} \
-              --spring.datasource.password=${{ secrets.DB_PASSWORD }} \
-              > /home/ubuntu/app.log 2>&1 &
+          uses: appleboy/ssh-action@master
+          with:
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USERNAME }}
+            key: ${{ secrets.EC2_KEY }}
+            command_timeout: 5m
+            script: |
+              pkill -f 'java -jar' || true
+              sleep 3
+              export DB_URL="${{ secrets.DB_URL }}"
+              export DB_USERNAME="${{ secrets.DB_USERNAME }}"
+              export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+              nohup java -jar /home/ubuntu/step-0.0.1-SNAPSHOT.jar \
+                --spring.datasource.url="$DB_URL" \
+                --spring.datasource.username="$DB_USERNAME" \
+                --spring.datasource.password="$DB_PASSWORD" \
+                > /home/ubuntu/app.log 2>&1 &
+              sleep 5
+              echo "서버 시작 완료"
