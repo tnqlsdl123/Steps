@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum GlobalErrorcode implements BaseErrorCode {
 
   INVALID_INPUT_VALUE("COMMON_400", "잘못된 요청입니다.", HttpStatus.BAD_REQUEST),
+  PROFILE_TAGS_COUNT_ERROR("PROFIEL_400","협업 성향 키워드는 정확히 2개를 선택해야 합니다.",HttpStatus.BAD_REQUEST),
   INTERNAL_SERVER_ERROR("COMMON_500", "서버 내부 오류가 발생했습니다.", HttpStatus.INTERNAL_SERVER_ERROR);
 
   private final String code;
