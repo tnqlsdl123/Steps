@@ -5,13 +5,17 @@ import com.likelion.step.global.error.code.BaseErrorCode;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponse<T> (
-    boolean inSuccess,
+    boolean isSuccess,
     String code,
     String message,
     T result
 ){
   public static <T> ApiResponse<T> success(T result){
     return new ApiResponse<>(true, "COMMON_200", "요청에 성공했습니다.", result);
+  }
+
+  public static <T> ApiResponse<T> success(String message, T result) {
+    return new ApiResponse<>(true, "COMMON_200", message, result);
   }
 
   public static ApiResponse<Void> success() {return success(null);}

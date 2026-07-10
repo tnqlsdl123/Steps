@@ -1,8 +1,11 @@
 package com.likelion.step.global.error.handler;
 
+import com.likelion.step.domain.auth.exception.AuthErrorCode;
+import com.likelion.step.domain.auth.exception.InvalidCredentialsException;
 import com.likelion.step.global.error.code.GlobalErrorcode;
 import com.likelion.step.global.error.exception.GeneralExeption;
 import com.likelion.step.global.response.ApiResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,12 +14,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(GeneralExeption.class)
-    public ResponseEntity<ApiResponse<Void>> handleBaseException(GeneralExeption exception) {
-      return ResponseEntity
-          .status(exception.getErrorCode().getStatus())
-          .body(ApiResponse.fail(exception.getErrorCode()));
-    }
+  @ExceptionHandler(GeneralExeption.class)
+  public ResponseEntity<ApiResponse<Void>> handleBaseException(GeneralExeption exception) {
+    return ResponseEntity
+        .status(exception.getErrorCode().getStatus())
+        .body(ApiResponse.fail(exception.getErrorCode()));
+  }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ResponseEntity<ApiResponse<String>> handleValidationException(MethodArgumentNotValidException exception) {
@@ -29,10 +32,16 @@ public class GlobalExceptionHandler {
         .body(ApiResponse.fail(GlobalErrorcode.INVALID_INPUT_VALUE, message));
   }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception exception) {
-      return ResponseEntity
-          .status(GlobalErrorcode.INTERNAL_SERVER_ERROR.getStatus())
-          .body(ApiResponse.fail(GlobalErrorcode.INTERNAL_SERVER_ERROR));
-    }
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiResponse<Void>> handleException(Exception exception) {
+    return ResponseEntity
+        .status(GlobalErrorcode.INTERNAL_SERVER_ERROR.getStatus())
+        .body(ApiResponse.fail(GlobalErrorcode.INTERNAL_SERVER_ERROR));
+  }
+
+  @ExceptionHandler(InvalidCredentialsException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInvalidCredentials(InvalidCredentialsException e) {
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        .body(ApiResponse.fail(AuthErrorCode.LOGIN_FAILED, null));
+  }
 }
