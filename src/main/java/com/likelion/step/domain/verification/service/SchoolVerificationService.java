@@ -7,7 +7,8 @@ import com.likelion.step.domain.verification.dto.VerificationSubmitResponse;
 import com.likelion.step.domain.verification.entity.SchoolVerification;
 import com.likelion.step.domain.verification.exception.VerificationErrorCode;
 import com.likelion.step.domain.verification.repository.SchoolVerificationRepository;
-import com.likelion.step.global.error.exception.GeneralExeption;
+import com.likelion.step.global.error.exception.GeneralException;
+import com.likelion.step.global.error.exception.GeneralException;
 import com.likelion.step.global.file.FileStorage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class SchoolVerificationService {
   @Transactional
   public VerificationSubmitResponse submit(Long memberId, MultipartFile file) {
     Member member = memberRepository.findById(memberId)
-        .orElseThrow(() -> new GeneralExeption(VerificationErrorCode.UNAUTHORIZED));
+        .orElseThrow(() -> new GeneralException(VerificationErrorCode.UNAUTHORIZED));
 
     String fileUrl = fileStorage.store(file);
 
@@ -45,7 +46,7 @@ public class SchoolVerificationService {
   public VerificationStatusResponse getStatus(Long memberId) {
     SchoolVerification verification = verificationRepository
         .findByMember_MemberId(memberId)
-        .orElseThrow(() -> new GeneralExeption(VerificationErrorCode.VERIFICATION_NOT_FOUND));
+        .orElseThrow(() -> new GeneralException(VerificationErrorCode.VERIFICATION_NOT_FOUND));
 
     return new VerificationStatusResponse(verification.getStatus());
   }
