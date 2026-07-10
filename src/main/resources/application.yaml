@@ -2,9 +2,9 @@ spring:
   application:
     name: step
   datasource:
-    url: jdbc:mysql://localhost:3306/steps_db
+    url: jdbc:mysql://localhost:306/steps_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
-    password: test1234
+    password: 7470
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

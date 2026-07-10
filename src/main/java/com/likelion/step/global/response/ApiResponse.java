@@ -5,7 +5,7 @@ import com.likelion.step.global.error.code.BaseErrorCode;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiResponse<T> (
-    boolean inSuccess,
+    boolean isSuccess,
     String code,
     String message,
     T result
