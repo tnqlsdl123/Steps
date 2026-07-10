@@ -1,14 +1,21 @@
 package com.likelion.step.global.config;
 
+import com.likelion.step.global.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -19,16 +26,19 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
+        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers(
-                "/api/auth/**",
-                "/swagger-ui.html",
-                "/swagger-ui/**",
+                "/api/auth/login",
+                "/api/auth/signup",
+                "/swagger-ui.html", "/swagger-ui/**",
                 "/v3/api-docs/**"
             ).permitAll()
-            // TODO: JWT 필터 완성 후 인증 필요한 API만 authenticated()로 변경
+            .requestMatchers("/api/auth/school-verification/**").authenticated() // 로그인 필수
             .anyRequest().permitAll()
-        );
+        )
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
     return http.build();
   }
 }
