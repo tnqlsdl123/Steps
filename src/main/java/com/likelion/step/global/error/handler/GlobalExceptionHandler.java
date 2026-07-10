@@ -1,7 +1,12 @@
 package com.likelion.step.global.error.handler;
 
+import com.likelion.step.domain.auth.exception.AuthErrorCode;
+import com.likelion.step.domain.auth.exception.DuplicateEmailException;
+import com.likelion.step.domain.auth.exception.InvalidCredentialsException;
+import com.likelion.step.domain.auth.exception.InvalidSignupException;
+import com.likelion.step.domain.member.exception.MemberErrorCode;
 import com.likelion.step.global.error.code.GlobalErrorcode;
-import com.likelion.step.global.error.exception.GeneralExeption;
+import com.likelion.step.global.error.exception.GeneralException;
 import com.likelion.step.global.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -9,30 +14,52 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@RestControllerAdvice   // ★ 이게 빠져 있었습니다
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(GeneralExeption.class)
-    public ResponseEntity<ApiResponse<Void>> handleBaseException(GeneralExeption exception) {
-      return ResponseEntity
-          .status(exception.getErrorCode().getStatus())
-          .body(ApiResponse.fail(exception.getErrorCode()));
-    }
-
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ApiResponse<String>> handleValidationException(MethodArgumentNotValidException exception) {
-    FieldError fieldError = exception.getBindingResult().getFieldError();
-    String message = fieldError == null ? GlobalErrorcode.INVALID_INPUT_VALUE.getMessage() : fieldError.getDefaultMessage();
-
+  @ExceptionHandler(GeneralException.class)
+  public ResponseEntity<ApiResponse<Void>> handleBaseException(GeneralException e) {
     return ResponseEntity
-        .status(GlobalErrorcode.INVALID_INPUT_VALUE.getStatus())
-        // 2. new ApiResponse 대신 이미 잘 만들어 두신 정적 팩토리 메서드를 호출합니다 ✨
-        .body(ApiResponse.fail(GlobalErrorcode.INVALID_INPUT_VALUE, message));
+        .status(e.getErrorCode().getStatus())
+        .body(ApiResponse.fail(e.getErrorCode()));
   }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleException(Exception exception) {
-      return ResponseEntity
-          .status(GlobalErrorcode.INTERNAL_SERVER_ERROR.getStatus())
-          .body(ApiResponse.fail(GlobalErrorcode.INTERNAL_SERVER_ERROR));
-    }
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
+    FieldError fieldError = e.getBindingResult().getFieldError();
+    String message = (fieldError == null)
+        ? GlobalErrorcode.INVALID_INPUT_VALUE.getMessage()
+        : fieldError.getDefaultMessage();
+    return ResponseEntity
+        .status(GlobalErrorcode.INVALID_INPUT_VALUE.getStatus())
+        .body(ApiResponse.failWithMessage(GlobalErrorcode.INVALID_INPUT_VALUE, message));
+  }
+
+  @ExceptionHandler(InvalidCredentialsException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInvalidCredentials(InvalidCredentialsException e) {
+    return ResponseEntity
+        .status(AuthErrorCode.LOGIN_FAILED.getStatus())
+        .body(ApiResponse.fail(AuthErrorCode.LOGIN_FAILED));
+  }
+
+  @ExceptionHandler(InvalidSignupException.class)
+  public ResponseEntity<ApiResponse<Void>> handleInvalidSignup(InvalidSignupException e) {
+    return ResponseEntity
+        .status(MemberErrorCode.INVALID_SIGNUP.getStatus())
+        .body(ApiResponse.failWithMessage(MemberErrorCode.INVALID_SIGNUP, e.getMessage()));
+  }
+
+  @ExceptionHandler(DuplicateEmailException.class)
+  public ResponseEntity<ApiResponse<Void>> handleDuplicateEmail(DuplicateEmailException e) {
+    return ResponseEntity
+        .status(MemberErrorCode.DUPLICATE_EMAIL.getStatus())
+        .body(ApiResponse.failWithMessage(MemberErrorCode.DUPLICATE_EMAIL, e.getMessage()));
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+    return ResponseEntity
+        .status(GlobalErrorcode.INTERNAL_SERVER_ERROR.getStatus())
+        .body(ApiResponse.fail(GlobalErrorcode.INTERNAL_SERVER_ERROR));
+  }
 }
