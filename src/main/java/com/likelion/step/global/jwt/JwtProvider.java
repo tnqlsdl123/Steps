@@ -29,4 +29,25 @@ public class JwtProvider {
         .signWith(key)
         .compact();
   }
+
+  // JwtProvider 클래스 안에 아래 메서드 추가
+  public Long getMemberId(String token) {
+    String subject = Jwts.parser()
+        .verifyWith(key)
+        .build()
+        .parseSignedClaims(token)
+        .getPayload()
+        .getSubject();
+    return Long.valueOf(subject);
+  }
+
+  public boolean validateToken(String token) {
+    try {
+      Jwts.parser().verifyWith(key).build().parseSignedClaims(token);
+      return true;
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
 }
