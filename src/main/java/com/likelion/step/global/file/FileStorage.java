@@ -1,7 +1,8 @@
 package com.likelion.step.global.file;
 
 import com.likelion.step.domain.verification.exception.VerificationErrorCode;
-import com.likelion.step.global.error.exception.GeneralExeption;
+import com.likelion.step.global.error.exception.GeneralException;
+import com.likelion.step.global.error.exception.GeneralException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,10 +24,10 @@ public class FileStorage {
 
   public String store(MultipartFile file) {
     if (file == null || file.isEmpty()) {
-      throw new GeneralExeption(VerificationErrorCode.EMPTY_FILE);
+      throw new GeneralException(VerificationErrorCode.EMPTY_FILE);
     }
     if (file.getContentType() == null || !ALLOWED.contains(file.getContentType())) {
-      throw new GeneralExeption(VerificationErrorCode.INVALID_FILE_TYPE);
+      throw new GeneralException(VerificationErrorCode.INVALID_FILE_TYPE);
     }
 
     try {
@@ -40,7 +41,7 @@ public class FileStorage {
 
       return "/uploads/" + storedName; // 저장 경로(URL)
     } catch (IOException e) {
-      throw new GeneralExeption(VerificationErrorCode.FILE_STORE_FAILED);
+      throw new GeneralException(VerificationErrorCode.FILE_STORE_FAILED);
     }
   }
 

@@ -1,7 +1,7 @@
 package com.likelion.step.global.security;
 
 import com.likelion.step.domain.verification.exception.VerificationErrorCode;
-import com.likelion.step.global.error.exception.GeneralExeption;
+import com.likelion.step.global.error.exception.GeneralException;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,7 +27,7 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
                                 WebDataBinderFactory binderFactory) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null || !(authentication.getPrincipal() instanceof Long memberId)) {
-      throw new GeneralExeption(VerificationErrorCode.UNAUTHORIZED);
+      throw new GeneralException(VerificationErrorCode.UNAUTHORIZED);
     }
     return memberId;
   }
