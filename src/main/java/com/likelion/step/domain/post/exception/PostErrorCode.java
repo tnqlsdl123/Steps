@@ -16,8 +16,8 @@ public enum PostErrorCode implements BaseErrorCode {
   INVALID_ACTIVITY_TYPE("POST_400", "유효하지 않은 활동 방식입니다.", HttpStatus.BAD_REQUEST),
   INVALID_INPUT("POST_400", "필수 입력값이 누락되었습니다.", HttpStatus.BAD_REQUEST),
   AUTHOR_NOT_FOUND("POST_401", "인증이 필요합니다.", HttpStatus.UNAUTHORIZED),
-  POST_NOT_FOUND("POST_404", "존재하지 않는 모집글입니다.", HttpStatus.NOT_FOUND);
-
+  POST_NOT_FOUND("POST_404", "존재하지 않는 모집글입니다.", HttpStatus.NOT_FOUND),
+  NOT_POST_AUTHOR("POST_403", "모집글 작성자만 조회할 수 있습니다.", HttpStatus.FORBIDDEN); // 추가
   private final String code;
   private final String message;
   private final HttpStatus status;

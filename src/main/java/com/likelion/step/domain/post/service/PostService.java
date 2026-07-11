@@ -1,5 +1,6 @@
 package com.likelion.step.domain.post.service;
 
+import com.likelion.step.domain.auth.repository.GeneralLoginRepository;
 import com.likelion.step.domain.post.dto.PostListResponse;
 import com.likelion.step.domain.application.entity.Application;
 import com.likelion.step.domain.application.exception.ApplicationErrorCode;
@@ -12,6 +13,8 @@ import com.likelion.step.domain.post.entity.Post;
 import com.likelion.step.domain.post.entity.PostCategory;
 import com.likelion.step.domain.post.exception.PostErrorCode;
 import com.likelion.step.domain.post.repository.PostRepository;
+import com.likelion.step.domain.profilecard.repository.CertificatesRepository;
+import com.likelion.step.domain.profilecard.repository.ProfileCardRepository;
 import com.likelion.step.domain.team.entity.Team;
 import com.likelion.step.domain.team.entity.TeamMember;
 import com.likelion.step.domain.team.entity.TeamRole;
@@ -37,6 +40,9 @@ public class PostService {
   private final TeamRepository teamRepository;
   private final TeamMemberRepository teamMemberRepository;
   private final ApplicationRepository applicationRepository; // 추가
+  private final ProfileCardRepository profileCardRepository;
+  private final CertificatesRepository certificatesRepository;
+  private final GeneralLoginRepository generalLoginRepository;
 
   @Transactional
   public PostCreateResponse create(Long memberId, PostCreateRequest request) {
@@ -131,6 +137,64 @@ public class PostService {
             post.getCreatedAt().toLocalDate().toString(),
             post.getRecruitDeadline().isBefore(LocalDate.now()) ? "모집마감" : "모집중"
         ))
+        .toList();
+  }
+
+  // ===== 지원자 프로필 목록 조회 (팀장 전용) =====
+  @Transactional(readOnly = true)
+  public List<ApplicantProfileResponse> getApplicants(Long memberId, Long postId) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(PostErrorCode.POST_NOT_FOUND));
+
+    // 팀장(작성자) 본인만 조회 가능
+    if (!post.getAuthor().getMemberId().equals(memberId)) {
+      throw new GeneralException(PostErrorCode.NOT_POST_AUTHOR);
+    }
+
+    return applicationRepository.findByPost_PostIdOrderByAppliedAtAsc(postId)
+        .stream()
+        .map(application -> {
+          Member applicant = application.getApplicant();
+          Long applicantId = applicant.getMemberId();
+
+          List<String> collaborationTags = List.of();
+          List<String> certificates = List.of();
+          String selfIntroduction = "";
+
+          var profileCardOpt = profileCardRepository.findByMemberId(applicantId);
+          if (profileCardOpt.isPresent()) {
+            var profileCard = profileCardOpt.get();
+            String tagsStr = profileCard.getCollaborationTags();
+            collaborationTags = (tagsStr != null && !tagsStr.isBlank())
+                ? List.of(tagsStr.split(","))
+                : List.of();
+            selfIntroduction = profileCard.getSelfIntroduce() != null
+                ? profileCard.getSelfIntroduce() : "";
+            certificates = certificatesRepository
+                .findAllByProfileCardId(profileCard.getProfileCardId())
+                .stream()
+                .map(c -> c.getCertificates())
+                .toList();
+          }
+
+          String contactEmail = generalLoginRepository.findById(applicantId)
+              .map(gl -> gl.getEmail())
+              .orElse("");
+
+          return new ApplicantProfileResponse(
+              application.getApplicationId(),
+              applicantId,
+              applicant.getName(),
+              applicant.getMajor(),
+              applicant.getSchool(),
+              applicant.getGrade(),
+              applicant.getGender(),
+              collaborationTags,
+              certificates,
+              selfIntroduction,
+              contactEmail
+          );
+        })
         .toList();
   }
 
