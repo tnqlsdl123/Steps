@@ -18,12 +18,12 @@ public class ProfileCard {
 
     private String selfIntroduce;
 
-    private Long userId;
+    private Long memberId;
 
     public ProfileCard(String collaborationTags, String selfIntroduce, Long userId) {
         this.collaborationTags = collaborationTags;
         this.selfIntroduce = selfIntroduce;
-        this.userId = userId;
+        this.memberId = userId;
     }
 
     public void updateProfileCard(String collaborationTags, String selfIntroduce) {

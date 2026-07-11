@@ -20,5 +20,5 @@ public class ProfileCardResponse {
     private CertificatesResponse certificates;
 
     private String selfIntroduce;
-    private String contactEmail;
+    private String email;
 }

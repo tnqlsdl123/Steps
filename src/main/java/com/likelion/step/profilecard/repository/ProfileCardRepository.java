@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface ProfileCardRepository extends JpaRepository<ProfileCard, Long> {
 
-    Optional<ProfileCard> findByUserId(Long userId);
+    Optional<ProfileCard> findByMemberId(Long memberId);
 
 
 }

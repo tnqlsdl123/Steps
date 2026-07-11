@@ -13,7 +13,11 @@ public enum GlobalErrorcode implements BaseErrorCode {
   PROFILE_TAGS_COUNT_ERROR(
           "PROFILE_400",
           "협업 성향 키워드는 정확히 2개를 선택해야 합니다.",
-          HttpStatus.BAD_REQUEST
+          HttpStatus.BAD_REQUEST),
+  MEMBER_NOT_FOUND(
+          "MEMBER_404",
+          "회원을 찾을 수 없습니다.",
+          HttpStatus.NOT_FOUND
   );
 
   private final String code;

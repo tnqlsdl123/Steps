@@ -4,11 +4,11 @@ import com.likelion.step.global.error.code.BaseErrorCode;
 import lombok.Getter;
 
 @Getter
-public class GeneralExeption extends RuntimeException {
+public class GeneralException extends RuntimeException {
 
   private final BaseErrorCode errorCode;
 
-  public GeneralExeption(BaseErrorCode errorCode) {
+  public GeneralException(BaseErrorCode errorCode) {
     super(errorCode.getMessage());
     this.errorCode = errorCode;
   }
