@@ -36,6 +36,7 @@ public class SecurityConfig {
             ).permitAll()
             .requestMatchers("/api/auth/school-verification/**").authenticated() // 로그인 필수
             .requestMatchers("/api/posts/**").authenticated()
+            .requestMatchers("/api/storage/**").authenticated()
             .anyRequest().permitAll()
         )
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
