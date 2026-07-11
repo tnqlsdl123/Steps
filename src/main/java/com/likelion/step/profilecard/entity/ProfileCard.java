@@ -19,9 +19,15 @@ public class ProfileCard {
 
     private Long memberId;
 
-    public ProfileCard(String tag, String introduce, Long memberId){
-        this.collaborationTags = getCollaborationTags();
-        this.selfIntroduce = getSelfIntroduce();
-        this.memberId = getMemberId();
+    public ProfileCard(String collaborationTags, String selfIntroduce, Long userId) {
+        this.collaborationTags = collaborationTags;
+        this.selfIntroduce = selfIntroduce;
+        this.memberId = userId;
     }
+
+    public void updateProfileCard(String collaborationTags, String selfIntroduce) {
+        this.collaborationTags = collaborationTags;
+        this.selfIntroduce = selfIntroduce;
+    }
+
 }

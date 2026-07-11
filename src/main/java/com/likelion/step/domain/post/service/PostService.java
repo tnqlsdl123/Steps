@@ -58,6 +58,7 @@ public class PostService {
     );
     Post savedPost = postRepository.save(post);
 
+    // 모집글 등록과 동시에 팀(1:1) 생성 + 작성자를 리더로 등록
     Team team = teamRepository.save(new Team(savedPost));
     teamMemberRepository.save(new TeamMember(team, author, TeamRole.LEADER));
 

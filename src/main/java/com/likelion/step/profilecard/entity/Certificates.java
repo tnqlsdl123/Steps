@@ -1,6 +1,6 @@
 package com.likelion.step.profilecard.entity;
 
-
+import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,8 +8,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "certificates")
-
+@Table(name ="certificates")
 public class Certificates {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -15,8 +15,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@RestControllerAdvice
 @Slf4j
-@RestControllerAdvice   // ★ 이게 빠져 있었습니다
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(GeneralException.class)
