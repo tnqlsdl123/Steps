@@ -15,7 +15,9 @@ public class ProfileCardController {
     private final ProfileCardService profileCardService;
 
     @PostMapping
-    public void createProfileCard(@RequestBody ProfileCardCreateRequest request){
-        profileCardService.createProfileCard(request);
+    public void createProfileCard(
+            @PathVariable Long memberId,
+            @RequestBody ProfileCardCreateRequest request){
+        profileCardService.createProfileCard(memberId, request);
     }
 }

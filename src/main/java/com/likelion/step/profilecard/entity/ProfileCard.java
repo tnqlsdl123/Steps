@@ -17,11 +17,11 @@ public class ProfileCard {
 
     private String selfIntroduce;
 
-    private Long userId;
+    private Long memberId;
 
-    public ProfileCard(String tag, String introduce, Long userId){
+    public ProfileCard(String tag, String introduce, Long memberId){
         this.collaborationTags = getCollaborationTags();
         this.selfIntroduce = getSelfIntroduce();
-        this.userId = userId;
+        this.memberId = getMemberId();
     }
 }

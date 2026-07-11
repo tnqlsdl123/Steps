@@ -19,3 +19,6 @@ spring:
 
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+jwt:
+  secret: this-is-a-very-long-secret-key-for-steps-project-1234

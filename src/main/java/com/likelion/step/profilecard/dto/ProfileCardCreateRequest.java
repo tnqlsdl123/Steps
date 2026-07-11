@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ProfileCardCreateRequest {
 
-    private Long userId;
+    private Long memberId;
     private List<String> collaborationTags;
     private String selfIntroduce;
     private List<String> certificates;

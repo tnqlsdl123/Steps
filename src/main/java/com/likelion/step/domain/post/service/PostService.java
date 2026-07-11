@@ -1,0 +1,187 @@
+package com.likelion.step.domain.post.service;
+
+import com.likelion.step.domain.application.entity.Application;
+import com.likelion.step.domain.application.exception.ApplicationErrorCode;
+import com.likelion.step.domain.application.repository.ApplicationRepository;
+import com.likelion.step.domain.member.entity.Member;
+import com.likelion.step.domain.member.repository.MemberRepository;
+import com.likelion.step.domain.post.dto.PostApplyResponse;
+import com.likelion.step.domain.post.dto.PostCreateRequest;
+import com.likelion.step.domain.post.dto.PostCreateResponse;
+import com.likelion.step.domain.post.dto.PostDetailResponse;
+import com.likelion.step.domain.post.entity.ActivityType;
+import com.likelion.step.domain.post.entity.Post;
+import com.likelion.step.domain.post.entity.PostCategory;
+import com.likelion.step.domain.post.exception.PostErrorCode;
+import com.likelion.step.domain.post.repository.PostRepository;
+import com.likelion.step.domain.team.entity.Team;
+import com.likelion.step.domain.team.entity.TeamMember;
+import com.likelion.step.domain.team.entity.TeamRole;
+import com.likelion.step.domain.team.repository.TeamMemberRepository;
+import com.likelion.step.domain.team.repository.TeamRepository;
+import com.likelion.step.global.error.exception.GeneralException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
+
+@Service
+@RequiredArgsConstructor
+public class PostService {
+
+  private final PostRepository postRepository;
+  private final MemberRepository memberRepository;
+  private final TeamRepository teamRepository;
+  private final TeamMemberRepository teamMemberRepository;
+  private final ApplicationRepository applicationRepository; // 추가
+
+  @Transactional
+  public PostCreateResponse create(Long memberId, PostCreateRequest request) {
+    Member author = memberRepository.findById(memberId)
+        .orElseThrow(() -> new GeneralException(PostErrorCode.AUTHOR_NOT_FOUND));
+
+    validate(request);
+
+    Post post = new Post(
+        author,
+        request.title(),
+        request.applicationUrl(),
+        parseCategory(request.category()),
+        parseDeadline(request.recruitDeadline()),
+        request.recruitCount(),
+        parseActivityType(request.activityType()),
+        request.activityPurpose(),
+        request.content()
+    );
+    Post savedPost = postRepository.save(post);
+
+    Team team = teamRepository.save(new Team(savedPost));
+    teamMemberRepository.save(new TeamMember(team, author, TeamRole.LEADER));
+
+    return new PostCreateResponse(savedPost.getPostId());
+  }
+
+  // ===== 모집글 상세 조회 =====
+  @Transactional(readOnly = true)
+  public PostDetailResponse getDetail(Long memberId, Long postId) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(PostErrorCode.POST_NOT_FOUND));
+
+    boolean hasApplied = applicationRepository
+        .existsByPost_PostIdAndApplicant_MemberId(postId, memberId);
+
+    String postStatus = post.getRecruitDeadline().isBefore(LocalDate.now())
+        ? "모집마감" : "모집중";
+
+    LocalDateTime deadlineWithTime = LocalDateTime.of(post.getRecruitDeadline(), LocalTime.of(23, 59, 0));
+
+    return new PostDetailResponse(
+        post.getPostId(),
+        post.getTitle(),
+        post.getAuthor().getName(),
+        post.getCreatedAt().toString(),
+        toCategoryLabel(post.getCategory()),
+        post.getApplicationUrl(),
+        deadlineWithTime.toString(),
+        post.getRecruitCount() + "명",
+        toActivityTypeLabel(post.getActivityType()),
+        post.getActivityPurpose(),
+        post.getContent(),
+        postStatus,
+        hasApplied
+    );
+  }
+
+  // ===== 모집글 지원하기 =====
+  @Transactional
+  public PostApplyResponse apply(Long memberId, Long postId) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(PostErrorCode.POST_NOT_FOUND));
+
+    Member applicant = memberRepository.findById(memberId)
+        .orElseThrow(() -> new GeneralException(PostErrorCode.AUTHOR_NOT_FOUND));
+
+    if (post.getAuthor().getMemberId().equals(memberId)) {
+      throw new GeneralException(ApplicationErrorCode.SELF_APPLY_NOT_ALLOWED);
+    }
+
+    if (applicationRepository.existsByPost_PostIdAndApplicant_MemberId(postId, memberId)) {
+      throw new GeneralException(ApplicationErrorCode.ALREADY_APPLIED);
+    }
+
+    Application application = applicationRepository.save(new Application(post, applicant));
+
+    return new PostApplyResponse(application.getApplicationId());
+  }
+
+  private void validate(PostCreateRequest request) {
+    if (request.title() == null || request.title().isBlank() || request.title().length() > 30) {
+      throw new GeneralException(PostErrorCode.INVALID_TITLE);
+    }
+    if (request.content() == null || request.content().isBlank() || request.content().length() > 200) {
+      throw new GeneralException(PostErrorCode.INVALID_CONTENT);
+    }
+    if (request.recruitCount() == null || request.recruitCount() < 1) {
+      throw new GeneralException(PostErrorCode.INVALID_RECRUIT_COUNT);
+    }
+    if (request.applicationUrl() == null || request.applicationUrl().isBlank()
+        || request.activityPurpose() == null || request.activityPurpose().isBlank()) {
+      throw new GeneralException(PostErrorCode.INVALID_INPUT);
+    }
+  }
+
+  private LocalDate parseDeadline(String value) {
+    if (value == null || value.isBlank()) {
+      throw new GeneralException(PostErrorCode.INVALID_DEADLINE);
+    }
+    try {
+      return LocalDate.parse(value);
+    } catch (DateTimeParseException e) {
+      throw new GeneralException(PostErrorCode.INVALID_DEADLINE);
+    }
+  }
+
+  private PostCategory parseCategory(String value) {
+    if (value == null) throw new GeneralException(PostErrorCode.INVALID_CATEGORY);
+    return switch (value.trim()) {
+      case "기획/아이디어", "PLANNING_IDEA" -> PostCategory.PLANNING_IDEA;
+      case "개발", "DEVELOPMENT" -> PostCategory.DEVELOPMENT;
+      case "디자인", "DESIGN" -> PostCategory.DESIGN;
+      case "마케팅", "MARKETING" -> PostCategory.MARKETING;
+      case "기타", "ETC" -> PostCategory.ETC;
+      default -> throw new GeneralException(PostErrorCode.INVALID_CATEGORY);
+    };
+  }
+
+  private ActivityType parseActivityType(String value) {
+    if (value == null) throw new GeneralException(PostErrorCode.INVALID_ACTIVITY_TYPE);
+    return switch (value.trim()) {
+      case "비대면", "ONLINE" -> ActivityType.ONLINE;
+      case "대면", "OFFLINE" -> ActivityType.OFFLINE;
+      case "혼합", "HYBRID" -> ActivityType.HYBRID;
+      default -> throw new GeneralException(PostErrorCode.INVALID_ACTIVITY_TYPE);
+    };
+  }
+
+  private String toCategoryLabel(PostCategory category) {
+    return switch (category) {
+      case PLANNING_IDEA -> "기획/아이디어";
+      case DEVELOPMENT -> "개발";
+      case DESIGN -> "디자인";
+      case MARKETING -> "마케팅";
+      case ETC -> "기타";
+    };
+  }
+
+  private String toActivityTypeLabel(ActivityType activityType) {
+    return switch (activityType) {
+      case ONLINE -> "비대면";
+      case OFFLINE -> "대면";
+      case HYBRID -> "혼합";
+    };
+  }
+}
