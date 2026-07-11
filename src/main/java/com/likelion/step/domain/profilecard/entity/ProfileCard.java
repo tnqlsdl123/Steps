@@ -1,4 +1,4 @@
-package com.likelion.step.profilecard.entity;
+package com.likelion.step.domain.profilecard.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

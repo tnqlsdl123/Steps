@@ -1,4 +1,4 @@
-package com.likelion.step.profilecard.dto;
+package com.likelion.step.domain.profilecard.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
