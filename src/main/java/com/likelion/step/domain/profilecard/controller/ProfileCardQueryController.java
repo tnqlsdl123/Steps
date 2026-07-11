@@ -14,6 +14,7 @@ public class ProfileCardQueryController {
 
     private final ProfileCardQueryService profileCardQueryService;
 
+    // 프로필 카드 조회
     @GetMapping("/{memberId}")
     public ApiResponse<ProfileCardResponse> getProfileCard(
             @PathVariable("memberId") Long memberId

@@ -38,11 +38,4 @@ public class ProfileCardController {
         return ApiResponse.success(response);
     }
 
-    // 프로필 카드 조회 (특정 회원)
-    @GetMapping("/{memberId}")
-    public ApiResponse<ProfileCardResponse> getProfileCard(
-        @PathVariable Long memberId) {
-
-        return ApiResponse.success(profileCardQueryService.getProfileCard(memberId));
-    }
 }
