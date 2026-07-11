@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.likelion.step.domain.post.dto.PostListResponse;
 import org.springframework.web.bind.annotation.*;
+import com.likelion.step.domain.post.dto.ApplicantProfileResponse;
 
 import java.util.List;
 
@@ -55,6 +56,15 @@ public class PostController {
       @LoginMember Long memberId) {
 
     List<PostListResponse> response = postService.getList();
+    return ApiResponse.success(response);
+  }
+
+  @GetMapping("/{postId}/applicants")
+  public ApiResponse<List<ApplicantProfileResponse>> getApplicants(
+      @LoginMember Long memberId,
+      @PathVariable Long postId) {
+
+    List<ApplicantProfileResponse> response = postService.getApplicants(memberId, postId);
     return ApiResponse.success(response);
   }
 
