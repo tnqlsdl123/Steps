@@ -9,4 +9,5 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long> {
   List<Post> findByAuthor_MemberIdOrderByCreatedAtDesc(Long memberId); // 추가
   List<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
+  List<Post> findAllByOrderByCreatedAtDesc();
 }
