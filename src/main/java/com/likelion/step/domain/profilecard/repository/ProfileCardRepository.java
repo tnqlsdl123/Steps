@@ -1,6 +1,6 @@
-package com.likelion.step.profilecard.repository;
+package com.likelion.step.domain.profilecard.repository;
 
-import com.likelion.step.profilecard.entity.ProfileCard;
+import com.likelion.step.domain.profilecard.entity.ProfileCard;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
