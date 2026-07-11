@@ -4,6 +4,7 @@ package com.likelion.step.profilecard.controller;
 import com.likelion.step.global.response.ApiResponse;
 import com.likelion.step.profilecard.dto.ProfileCardResponse;
 import com.likelion.step.profilecard.dto.ProfileCardUpdateRequest;
+import com.likelion.step.profilecard.dto.ProfileCardCreateRequest;
 import com.likelion.step.profilecard.service.ProfileCardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -26,5 +27,10 @@ public class ProfileCardController {
         ProfileCardResponse response = profileCardService.updateProfileCard(userId, request);
 
         return ApiResponse.success(response);
+    @PostMapping
+    public void createProfileCard(
+            @PathVariable Long memberId,
+            @RequestBody ProfileCardCreateRequest request){
+        profileCardService.createProfileCard(memberId, request);
     }
 }

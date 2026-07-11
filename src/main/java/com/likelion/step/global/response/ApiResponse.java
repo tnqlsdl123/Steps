@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.likelion.step.global.error.code.BaseErrorCode;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public record ApiResponse<T> (
+public record ApiResponse<T>(
     @JsonProperty("isSuccess") boolean isSuccess,
     String code,
     String message,
@@ -31,6 +31,7 @@ public record ApiResponse<T> (
     return fail(errorCode, null);
   }
 
+  // 검증 실패처럼 상황별 메시지를 직접 넣어야 할 때 사용
   public static ApiResponse<Void> failWithMessage(BaseErrorCode errorCode, String message) {
     return new ApiResponse<>(false, errorCode.getCode(), message, null);
   }

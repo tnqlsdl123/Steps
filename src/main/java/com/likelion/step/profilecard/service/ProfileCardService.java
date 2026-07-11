@@ -92,5 +92,24 @@ public class ProfileCardService {
                 request.getSelfIntroduce(),
                 generalLogin.getEmail() // contactEmail
         );
+        String collaborationTags =
+                String.join(",", request.getCollaborationTags());
+
+        ProfileCard profileCard = new ProfileCard(
+                collaborationTags,
+                request.getSelfIntroduce(),
+                member.getMemberId()
+        );
+
+        ProfileCard saveProfileCard = profileCardRepository.save(profileCard);
+
+        for (String certificationName : request.getCertificates()) {
+            Certificates certificates = new Certificates(
+                    certificationName,
+                    saveProfileCard.getProfileCardId()
+            );
+
+            certificationRepository.save(certificates);
+        }
     }
 }

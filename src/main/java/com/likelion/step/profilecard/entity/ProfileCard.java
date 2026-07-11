@@ -4,12 +4,11 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
 @Entity
+@Getter
 @NoArgsConstructor
-@Table(name = "profile_Card")
+@Table(name = "ProfileCard")
 public class ProfileCard {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long profileCardId;

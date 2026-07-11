@@ -1,9 +1,12 @@
 package com.likelion.step.domain.post.service;
 
+import com.likelion.step.domain.post.dto.PostListResponse;
+import com.likelion.step.domain.application.entity.Application;
+import com.likelion.step.domain.application.exception.ApplicationErrorCode;
+import com.likelion.step.domain.application.repository.ApplicationRepository;
 import com.likelion.step.domain.member.entity.Member;
 import com.likelion.step.domain.member.repository.MemberRepository;
-import com.likelion.step.domain.post.dto.PostCreateRequest;
-import com.likelion.step.domain.post.dto.PostCreateResponse;
+import com.likelion.step.domain.post.dto.*;
 import com.likelion.step.domain.post.entity.ActivityType;
 import com.likelion.step.domain.post.entity.Post;
 import com.likelion.step.domain.post.entity.PostCategory;
@@ -20,7 +23,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,7 @@ public class PostService {
   private final MemberRepository memberRepository;
   private final TeamRepository teamRepository;
   private final TeamMemberRepository teamMemberRepository;
+  private final ApplicationRepository applicationRepository; // 추가
 
   @Transactional
   public PostCreateResponse create(Long memberId, PostCreateRequest request) {
@@ -58,6 +65,75 @@ public class PostService {
     return new PostCreateResponse(savedPost.getPostId());
   }
 
+  // ===== 모집글 상세 조회 =====
+  @Transactional(readOnly = true)
+  public PostDetailResponse getDetail(Long memberId, Long postId) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(PostErrorCode.POST_NOT_FOUND));
+
+    boolean hasApplied = applicationRepository
+        .existsByPost_PostIdAndApplicant_MemberId(postId, memberId);
+
+    String postStatus = post.getRecruitDeadline().isBefore(LocalDate.now())
+        ? "모집마감" : "모집중";
+
+    LocalDateTime deadlineWithTime = LocalDateTime.of(post.getRecruitDeadline(), LocalTime.of(23, 59, 0));
+
+    return new PostDetailResponse(
+        post.getPostId(),
+        post.getTitle(),
+        post.getAuthor().getName(),
+        post.getCreatedAt().toString(),
+        toCategoryLabel(post.getCategory()),
+        post.getApplicationUrl(),
+        deadlineWithTime.toString(),
+        post.getRecruitCount() + "명",
+        toActivityTypeLabel(post.getActivityType()),
+        post.getActivityPurpose(),
+        post.getContent(),
+        postStatus,
+        hasApplied
+    );
+  }
+
+  // ===== 모집글 지원하기 =====
+  @Transactional
+  public PostApplyResponse apply(Long memberId, Long postId) {
+    Post post = postRepository.findById(postId)
+        .orElseThrow(() -> new GeneralException(PostErrorCode.POST_NOT_FOUND));
+
+    Member applicant = memberRepository.findById(memberId)
+        .orElseThrow(() -> new GeneralException(PostErrorCode.AUTHOR_NOT_FOUND));
+
+    if (post.getAuthor().getMemberId().equals(memberId)) {
+      throw new GeneralException(ApplicationErrorCode.SELF_APPLY_NOT_ALLOWED);
+    }
+
+    if (applicationRepository.existsByPost_PostIdAndApplicant_MemberId(postId, memberId)) {
+      throw new GeneralException(ApplicationErrorCode.ALREADY_APPLIED);
+    }
+
+    Application application = applicationRepository.save(new Application(post, applicant));
+
+    return new PostApplyResponse(application.getApplicationId());
+  }
+
+  // ===== 전체 글 목록 조회 =====
+  @Transactional(readOnly = true)
+  public List<PostListResponse> getList() {
+    return postRepository.findAllByOrderByCreatedAtDesc()
+        .stream()
+        .map(post -> new PostListResponse(
+            post.getPostId(),
+            post.getTitle(),
+            toCategoryLabel(post.getCategory()),
+            post.getAuthor().getName(),
+            post.getCreatedAt().toLocalDate().toString(),
+            post.getRecruitDeadline().isBefore(LocalDate.now()) ? "모집마감" : "모집중"
+        ))
+        .toList();
+  }
+
   private void validate(PostCreateRequest request) {
     if (request.title() == null || request.title().isBlank() || request.title().length() > 30) {
       throw new GeneralException(PostErrorCode.INVALID_TITLE);
@@ -79,7 +155,7 @@ public class PostService {
       throw new GeneralException(PostErrorCode.INVALID_DEADLINE);
     }
     try {
-      return LocalDate.parse(value); // ISO-8601 (YYYY-MM-DD)
+      return LocalDate.parse(value);
     } catch (DateTimeParseException e) {
       throw new GeneralException(PostErrorCode.INVALID_DEADLINE);
     }
@@ -104,6 +180,24 @@ public class PostService {
       case "대면", "OFFLINE" -> ActivityType.OFFLINE;
       case "혼합", "HYBRID" -> ActivityType.HYBRID;
       default -> throw new GeneralException(PostErrorCode.INVALID_ACTIVITY_TYPE);
+    };
+  }
+
+  private String toCategoryLabel(PostCategory category) {
+    return switch (category) {
+      case PLANNING_IDEA -> "기획/아이디어";
+      case DEVELOPMENT -> "개발";
+      case DESIGN -> "디자인";
+      case MARKETING -> "마케팅";
+      case ETC -> "기타";
+    };
+  }
+
+  private String toActivityTypeLabel(ActivityType activityType) {
+    return switch (activityType) {
+      case ONLINE -> "비대면";
+      case OFFLINE -> "대면";
+      case HYBRID -> "혼합";
     };
   }
 }
