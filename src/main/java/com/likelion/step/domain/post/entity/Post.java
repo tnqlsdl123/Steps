@@ -64,4 +64,15 @@ public class Post {
     this.content = content;
     this.createdAt = LocalDateTime.now();
   }
+
+  @Column(nullable = false)
+  private boolean isClosed = false; // 모집 인원 충족 시 true로 변경
+
+  public void close() {
+    this.isClosed = true;
+  }
+
+  public boolean isClosed() {
+    return isClosed;
+  }
 }

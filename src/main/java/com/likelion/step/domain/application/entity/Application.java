@@ -38,4 +38,12 @@ public class Application {
     this.status = ApplicationStatus.PENDING;
     this.appliedAt = LocalDateTime.now();
   }
+
+  public void accept() {
+    this.status = ApplicationStatus.ACCEPTED;
+  }
+
+  public void reject() {
+    this.status = ApplicationStatus.REJECTED;
+  }
 }
