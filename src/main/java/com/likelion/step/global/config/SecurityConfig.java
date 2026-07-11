@@ -53,12 +53,18 @@ public class SecurityConfig {
             .requestMatchers(
                 "/api/auth/login",
                 "/api/auth/signup",
+                "/api/home",
                 "/swagger-ui.html", "/swagger-ui/**",
-                "/v3/api-docs/**"
+                "/v3/api-docs/**",
+                "/uploads/**"
             ).permitAll()
-            .requestMatchers("/api/auth/school-verification/**").authenticated() // 로그인 필수
+            .requestMatchers("/api/auth/school-verification/**").authenticated()
             .requestMatchers("/api/posts/**").authenticated()
             .requestMatchers("/api/applications/**").authenticated()
+            .requestMatchers("/api/teams/**").authenticated()
+            .requestMatchers("/api/storage/**").authenticated()
+            .requestMatchers("/api/profile/**").authenticated()
+            .requestMatchers("/api/admin/**").authenticated()
             .anyRequest().permitAll()
         )
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
