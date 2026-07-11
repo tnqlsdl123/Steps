@@ -1,14 +1,12 @@
 package com.likelion.step.domain.post.service;
 
+import com.likelion.step.domain.post.dto.PostListResponse;
 import com.likelion.step.domain.application.entity.Application;
 import com.likelion.step.domain.application.exception.ApplicationErrorCode;
 import com.likelion.step.domain.application.repository.ApplicationRepository;
 import com.likelion.step.domain.member.entity.Member;
 import com.likelion.step.domain.member.repository.MemberRepository;
-import com.likelion.step.domain.post.dto.PostApplyResponse;
-import com.likelion.step.domain.post.dto.PostCreateRequest;
-import com.likelion.step.domain.post.dto.PostCreateResponse;
-import com.likelion.step.domain.post.dto.PostDetailResponse;
+import com.likelion.step.domain.post.dto.*;
 import com.likelion.step.domain.post.entity.ActivityType;
 import com.likelion.step.domain.post.entity.Post;
 import com.likelion.step.domain.post.entity.PostCategory;
@@ -28,6 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -116,6 +115,22 @@ public class PostService {
     Application application = applicationRepository.save(new Application(post, applicant));
 
     return new PostApplyResponse(application.getApplicationId());
+  }
+
+  // ===== 전체 글 목록 조회 =====
+  @Transactional(readOnly = true)
+  public List<PostListResponse> getList() {
+    return postRepository.findAllByOrderByCreatedAtDesc()
+        .stream()
+        .map(post -> new PostListResponse(
+            post.getPostId(),
+            post.getTitle(),
+            toCategoryLabel(post.getCategory()),
+            post.getAuthor().getName(),
+            post.getCreatedAt().toLocalDate().toString(),
+            post.getRecruitDeadline().isBefore(LocalDate.now()) ? "모집마감" : "모집중"
+        ))
+        .toList();
   }
 
   private void validate(PostCreateRequest request) {
