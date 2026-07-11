@@ -8,12 +8,14 @@ import com.likelion.step.domain.member.exception.MemberErrorCode;
 import com.likelion.step.global.error.code.GlobalErrorcode;
 import com.likelion.step.global.error.exception.GeneralException;
 import com.likelion.step.global.response.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+@Slf4j
 @RestControllerAdvice   // ★ 이게 빠져 있었습니다
 public class GlobalExceptionHandler {
 
@@ -58,6 +60,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiResponse<Void>> handleException(Exception e) {
+    log.error("처리되지 않은 예외 발생", e);
     return ResponseEntity
         .status(GlobalErrorcode.INTERNAL_SERVER_ERROR.getStatus())
         .body(ApiResponse.fail(GlobalErrorcode.INTERNAL_SERVER_ERROR));
