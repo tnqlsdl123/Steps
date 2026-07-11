@@ -1,8 +1,10 @@
-// domain/team/repository/TeamRepository.java
 package com.likelion.step.domain.team.repository;
 
 import com.likelion.step.domain.team.entity.Team;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 public interface TeamRepository extends JpaRepository<Team, Long> {
+  Optional<Team> findByPost_PostId(Long postId); // 추가
 }
