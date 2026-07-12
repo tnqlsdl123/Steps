@@ -64,7 +64,7 @@ public class SecurityConfig {
             .requestMatchers("/api/teams/**").authenticated()
             .requestMatchers("/api/storage/**").authenticated()
             .requestMatchers("/api/profile/**").authenticated()
-            .requestMatchers("/api/admin/**").authenticated()
+            .requestMatchers("/api/admin/**").permitAll()
             .anyRequest().permitAll()
         )
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

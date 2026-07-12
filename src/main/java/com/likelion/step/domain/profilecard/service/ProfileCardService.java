@@ -6,6 +6,7 @@ import com.likelion.step.domain.member.entity.Member;
 import com.likelion.step.domain.member.repository.MemberRepository;
 import com.likelion.step.domain.profilecard.dto.CertificatesResponse;
 import com.likelion.step.domain.profilecard.dto.ProfileCardCreateRequest;
+import com.likelion.step.domain.profilecard.dto.ProfileCardCreateResponse;
 import com.likelion.step.domain.profilecard.dto.ProfileCardResponse;
 import com.likelion.step.domain.profilecard.dto.ProfileCardUpdateRequest;
 import com.likelion.step.domain.profilecard.entity.Certificates;
@@ -31,7 +32,7 @@ public class ProfileCardService {
 
   // 프로필 카드 생성
   @Transactional
-  public void createProfileCard(Long memberId, ProfileCardCreateRequest request) {
+  public ProfileCardCreateResponse createProfileCard(Long memberId, ProfileCardCreateRequest request) {
     Member member = memberRepository.findById(memberId)
         .orElseThrow(() -> new GeneralException(GlobalErrorcode.MEMBER_NOT_FOUND));
 
@@ -54,6 +55,8 @@ public class ProfileCardService {
           new Certificates(certificateName, savedProfileCard.getProfileCardId())
       );
     }
+
+    return new ProfileCardCreateResponse(savedProfileCard.getProfileCardId());
   }
 
   // 프로필 카드 수정
@@ -62,6 +65,9 @@ public class ProfileCardService {
     if (request.getCollaborationTags() == null
         || request.getCollaborationTags().size() != 2) {
       throw new GeneralException(GlobalErrorcode.PROFILE_TAGS_COUNT_ERROR);
+    }
+    if (profileCardRepository.findByMemberId(memberId).isPresent()) {
+      throw new GeneralException(GlobalErrorcode.PROFILE_ALREADY_EXISTS); // 에러코드 추가 필요
     }
 
     Member member = memberRepository.findById(memberId)

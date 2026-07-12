@@ -8,6 +8,7 @@ import com.likelion.step.domain.auth.exception.InvalidSignupException;
 import com.likelion.step.domain.auth.repository.GeneralLoginRepository;
 import com.likelion.step.domain.member.entity.Member;
 import com.likelion.step.domain.member.repository.MemberRepository;
+import com.likelion.step.global.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,11 +23,12 @@ public class SignupService {
   private final MemberRepository memberRepository;
   private final GeneralLoginRepository generalLoginRepository;
   private final PasswordEncoder passwordEncoder;
+  private final JwtProvider jwtProvider; // 추가
 
   private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z가-힣]+$");
   private static final Pattern BIRTH_DATE_PATTERN = Pattern.compile("^\\d{4}/\\d{2}/\\d{2}$");
   private static final Pattern SCHOOL_PATTERN = Pattern.compile("^[a-zA-Z0-9가-힣\\s]+$");
-  private static final Pattern PASSWORD_PATTERN = Pattern.compile("^\\S{8,16}$"); // 공백 없이 8~16자
+  private static final Pattern PASSWORD_PATTERN = Pattern.compile("^\\S{8,16}$");
 
   @Transactional
   public SignupResponse signup(SignupRequest request) {
@@ -50,7 +52,10 @@ public class SignupService {
     GeneralLogin generalLogin = new GeneralLogin(request.email(), encodedPassword, savedMember);
     generalLoginRepository.save(generalLogin);
 
-    return new SignupResponse(savedMember.getMemberId());
+    // 회원가입 직후 토큰 발급 (학교 인증 페이지에서 사용)
+    String accessToken = jwtProvider.createToken(savedMember.getMemberId(), false);
+
+    return new SignupResponse(savedMember.getMemberId(), accessToken);
   }
 
   private void validate(SignupRequest request) {
