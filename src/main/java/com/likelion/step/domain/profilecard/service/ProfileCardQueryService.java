@@ -35,7 +35,8 @@ public class ProfileCardQueryService {
     ProfileCard profileCard = profileCardRepository.findByMemberId(memberId)
         .orElseThrow(() -> new GeneralException(GlobalErrorcode.INVALID_INPUT_VALUE));
 
-    GeneralLogin generalLogin = generalLoginRepository.findById(memberId)
+    // findById → findByMember_MemberId로 수정
+    GeneralLogin generalLogin = generalLoginRepository.findByMember_MemberId(memberId)
         .orElseThrow(() -> new GeneralException(GlobalErrorcode.MEMBER_NOT_FOUND));
 
     List<String> collaborationTags = (profileCard.getCollaborationTags() != null

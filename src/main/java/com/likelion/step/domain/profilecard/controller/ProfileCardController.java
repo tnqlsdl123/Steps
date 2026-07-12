@@ -1,6 +1,7 @@
 package com.likelion.step.domain.profilecard.controller;
 
 import com.likelion.step.domain.profilecard.dto.ProfileCardCreateRequest;
+import com.likelion.step.domain.profilecard.dto.ProfileCardCreateResponse;
 import com.likelion.step.domain.profilecard.dto.ProfileCardResponse;
 import com.likelion.step.domain.profilecard.dto.ProfileCardUpdateRequest;
 import com.likelion.step.domain.profilecard.service.ProfileCardService;
@@ -20,12 +21,12 @@ public class ProfileCardController {
 
     // 프로필 카드 생성
     @PostMapping
-    public ApiResponse<Void> createProfileCard(
+    public ApiResponse<ProfileCardCreateResponse> createProfileCard(
         @LoginMember Long memberId,
         @RequestBody ProfileCardCreateRequest request) {
 
-        profileCardService.createProfileCard(memberId, request);
-        return ApiResponse.success();
+        ProfileCardCreateResponse response = profileCardService.createProfileCard(memberId, request);
+        return ApiResponse.success("프로필 카드가 생성되었습니다.", response);
     }
 
     // 프로필 카드 수정
@@ -38,7 +39,15 @@ public class ProfileCardController {
         return ApiResponse.success(response);
     }
 
-    // 프로필 카드 조회 (특정 회원)
+    // 내 프로필 카드 조회 (로그인한 본인) ← 추가
+    @GetMapping("/me")
+    public ApiResponse<ProfileCardResponse> getMyProfileCard(
+        @LoginMember Long memberId) {
+
+        return ApiResponse.success(profileCardQueryService.getProfileCard(memberId));
+    }
+
+    // 특정 회원 프로필 카드 조회
     @GetMapping("/{memberId}")
     public ApiResponse<ProfileCardResponse> getProfileCard(
         @PathVariable Long memberId) {
